@@ -44,13 +44,6 @@ public class ProductService {
         }
     }
 
-//    public String deleteProduct(long id) {
-//        String message;
-//        message = String.format("Product %s was deleted...", id);
-//        productRepository.deleteById(id);
-//        return message;
-//    }
-
     public String deleteProduct(long id) {
         String message;
         if (productRepository.existsById(id)) {
