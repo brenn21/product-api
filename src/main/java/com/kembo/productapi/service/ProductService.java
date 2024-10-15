@@ -55,7 +55,7 @@ public class ProductService {
         String message;
         if (productRepository.existsById(id)) {
             productRepository.deleteById(id);
-            message = String.format("Produit with id %s was deleted", id);
+            message = String.format("Product with id %s was deleted", id);
         }
         else {
             message = String.format("Id %s don't exist...", id);
