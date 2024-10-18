@@ -1,55 +1,58 @@
 package com.kembo.productapi.service;
 
+import com.kembo.productapi.dto.ProductRequest;
+import com.kembo.productapi.dto.ProductResponse;
+import com.kembo.productapi.exception.ProductException;
 import com.kembo.productapi.model.Product;
 import com.kembo.productapi.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public List<ProductResponse> getListProduct() {
+        return productRepository.findAll()
+                .stream()
+                .map(product -> new ProductResponse(product.getId(), product.getName(), product.getPrice()))
+                .toList();
     }
 
-    public List<Product> getListProduct() {
-        return productRepository.findAll();
-    }
-
-    public Optional<Product> getProductById(long id) {
+    public ProductResponse getProductById(long id) {
         Optional<Product> productOptional = productRepository.findById(id);
         if (productOptional.isEmpty()) {
-            throw new RuntimeException("Product not found...");
+            throw new ProductException();
         }
-        return productOptional;
+        return new ProductResponse(productOptional.get().getId(), productOptional.get().getName(), productOptional.get().getPrice());
     }
 
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
+    public ProductResponse createProduct(ProductRequest productRequest) {
+        Product product = Product.builder()
+                .name(productRequest.name())
+                .price(productRequest.price())
+                .build();
+        productRepository.save(product);
+        return new ProductResponse(product.getId(), product.getName(), product.getPrice());
     }
 
-    public Product updateProduct(long id, Product product) {
+    public ProductResponse updateProduct(long id, ProductRequest productRequest) {
         Optional<Product> optionalProduct = productRepository.findById(id);
         if (optionalProduct.isPresent()) {
-            optionalProduct.get().setName(product.getName());
-            optionalProduct.get().setPrice(product.getPrice());
-            return productRepository.save(optionalProduct.get());
+            optionalProduct.get().setName(productRequest.name());
+            optionalProduct.get().setPrice(productRequest.price());
+            productRepository.save(optionalProduct.get());
         }
         else {
-            return optionalProduct.orElseThrow(()->new RuntimeException("Product not found..."));
+            throw new ProductException();
         }
+        return new ProductResponse(optionalProduct.get().getId(), optionalProduct.get().getName(), optionalProduct.get().getPrice());
     }
-
-//    public String deleteProduct(long id) {
-//        String message;
-//        message = String.format("Product %s was deleted...", id);
-//        productRepository.deleteById(id);
-//        return message;
-//    }
 
     public String deleteProduct(long id) {
         String message;
@@ -58,7 +61,7 @@ public class ProductService {
             message = String.format("Product with id %s was deleted", id);
         }
         else {
-            message = String.format("Id %s don't exist...", id);
+            message = String.format("Product with id %s don't exist in our stock...", id);
         }
         return message;
     }

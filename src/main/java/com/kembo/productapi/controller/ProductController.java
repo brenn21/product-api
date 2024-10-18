@@ -1,7 +1,10 @@
 package com.kembo.productapi.controller;
 
+import com.kembo.productapi.dto.ProductRequest;
+import com.kembo.productapi.dto.ProductResponse;
 import com.kembo.productapi.model.Product;
 import com.kembo.productapi.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,33 +16,30 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/product")
+@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
     @GetMapping("/list")
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
         return new ResponseEntity<>(productService.getListProduct(), HttpStatus.OK);
     }
 
     @GetMapping("/single-product/{id}")
-    public ResponseEntity<Optional<Product>> getProductById(@PathVariable("id") long id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable("id") long id) {
         return new ResponseEntity<>(productService.getProductById(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(product.getId()).toUri();
-        return ResponseEntity.created(location).body(productService.createProduct(product));
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(productRequest.id()).toUri();
+        return ResponseEntity.created(location).body(productService.createProduct(productRequest));
     }
 
     @PutMapping("/update-product/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
-        return new ResponseEntity<>(productService.updateProduct(id, product), HttpStatus.OK);
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable("id") long id, @RequestBody ProductRequest productRequest) {
+        return new ResponseEntity<>(productService.updateProduct(id, productRequest), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete-product/{id}")
